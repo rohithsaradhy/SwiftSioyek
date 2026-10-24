@@ -1,5 +1,11 @@
 # Swift Sioyek
 
+## Notes from Rohith Saradhy
+
+I just wanted a Sioyek-like PDF reader built in Swift for my personal use. I found it useful, so I am sharing it in this open repository.
+
+This app was entirely written by AI.
+
 ![Swift Sioyek app icon](Resources/Assets.xcassets/AppIcon.appiconset/icon_128x128.png)
 
 A research PDF reader for Apple Silicon Macs, written in Swift with AppKit and PDFKit. Read papers with keyboard commands, follow references, keep bookmarks and highlights, and use trackpad scrolling and pinch zoom.
@@ -7,12 +13,6 @@ A research PDF reader for Apple Silicon Macs, written in Swift with AppKit and P
 Inspired by [Sioyek](https://github.com/ahrm/sioyek), created by [ahrm](https://github.com/ahrm) and contributors. **Swift Sioyek is an independent project and is not affiliated with or endorsed by the upstream Sioyek project.** It uses Apple's PDF rendering frameworks rather than Sioyek's rendering stack. See [Acknowledgments](#acknowledgments) and [License](#license).
 
 **Status:** experimental source release. The current target is macOS 27 with Xcode 27 or newer; older macOS versions and Intel Macs are not supported by the current build configuration. Build locally using the instructions below.
-
-## Notes from Rohith Saradhy
-
-I just wanted a Sioyek-like PDF reader built in Swift for my personal use. I found it useful, so I am sharing it in this open repository.
-
-This app was entirely written by AI.
 
 ## Features
 

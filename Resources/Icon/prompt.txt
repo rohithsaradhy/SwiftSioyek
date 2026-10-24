@@ -1,0 +1,8 @@
+Use case: logo-brand
+Asset type: production macOS application icon for Swift Sioyek, a quiet native research PDF reader.
+Primary request: Design one exceptionally tasteful, distinctive app icon: a sculptural open book made from two gently folded ivory paper leaves, with the central folded edge describing a subtle flowing S. One small muted brass bookmark rests at the upper central fold. The silhouette must read immediately as reading and paper, with a restrained editorial sensibility.
+Style/medium: premium macOS icon, softly dimensional paper sculpture, crisp edges, restrained material shading and delicate top-left lighting. Calm, precise, timeless, beautifully balanced. No glossy plastic.
+Composition: one centered icon on a square 1024 by 1024 canvas. A deep ink-blue rounded-square tile occupies about 86 percent of the canvas width; transparent pixels outside its rounded silhouette, including the outer margin. The ivory book fills the central 65 percent of the tile. Generous breathing room. Straight-on view with subtle depth, strong simple forms legible at 16 and 32 pixels. The tile has very subtle tonal depth and a clean rounded silhouette.
+Palette: deep desaturated midnight ink blue, warm ivory paper, one tiny muted brass accent. Strong contrast. Low visual noise.
+Text: none.
+Constraints: exactly one finished icon, no grid, no mockup, no device, no scene, no lettering, no PDF label, no pen, no magnifier, no extra badges, no watermark. Truly transparent outside the rounded-square tile; do not draw checkerboard squares.

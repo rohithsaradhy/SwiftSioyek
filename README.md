@@ -1,8 +1,24 @@
 # Swift Sioyek
 
-A macOS 27 research PDF reader written in Swift 6 for Apple Silicon. AppKit supplies the interface, PDFKit/Quartz renders PDF content, and Core Animation composites reusable page tiles. There are no third-party dependencies or network services.
+![Swift Sioyek app icon](Resources/Assets.xcassets/AppIcon.appiconset/icon_128x128.png)
 
-The design follows Sioyek's research workflows, with a quiet native window, standard Mac shortcuts, and a configurable keyboard command system. It is an independent implementation; no upstream Sioyek source or rendering libraries are included.
+A research PDF reader for Apple Silicon Macs, written in Swift with AppKit and PDFKit. Read papers with keyboard commands, follow references, keep bookmarks and highlights, and use trackpad scrolling and pinch zoom.
+
+Inspired by [Sioyek](https://github.com/ahrm/sioyek), created by [ahrm](https://github.com/ahrm) and contributors. **Swift Sioyek is an independent project and is not affiliated with or endorsed by the upstream Sioyek project.** It uses Apple's PDF rendering frameworks rather than Sioyek's rendering stack. See [Acknowledgments](#acknowledgments) and [License](#license).
+
+**Status:** experimental source release. The current target is macOS 27 with Xcode 27 or newer; older macOS versions and Intel Macs are not supported by the current build configuration. Build locally using the instructions below.
+
+## Features
+
+- Configurable keyboard commands, counted motions, marks, and navigation history.
+- Document and chapter search with highlighted matches and page-range filters.
+- Bookmarks, text highlights, a reading ruler, and keyboard text selection.
+- Reference previews, link hints, and portal windows for reading two locations together.
+- Native trackpad scrolling and pinch zoom centered around the pointer.
+- External searches in Google Scholar, Library Genesis, Google, or configured engines.
+- Local SQLite storage for reading positions and annotations, plus annotated-copy export.
+
+PDF processing and library storage run locally. The project has no third-party package dependencies or cloud backend. External search opens the selected or inferred query in your default browser at the configured search service.
 
 Commands and document search open in a compact, Spotlight-style native palette. There is no sidebar. Type to filter, use ↑/↓ to choose a result, Return to open it, and Escape to return to reading. Contents, pages, bookmarks, and highlights use the same interface.
 
@@ -97,6 +113,32 @@ Rebuild with `scripts/build-app.sh` afterward to produce the normal sandboxed ap
 
 ## Current boundaries
 
-OCR, SyncTeX, extensions, external command control, Sioyek database import, cloud sync, and public distribution are outside this release. Scanned PDFs display normally but need an existing text layer for selection and search. PDFKit's extraction order and font encodings determine text-selection fidelity; unusual layouts can require manual selection. Smart jumps are deterministic heuristics, rather than a guarantee for every publication's reference style.
+OCR, SyncTeX, extensions, external command control, Sioyek database import, cloud sync, and notarized binary releases are outside this release. Scanned PDFs display normally but need an existing text layer for selection and search. PDFKit's extraction order and font encodings determine text-selection fidelity; unusual layouts can require manual selection. Smart jumps are deterministic heuristics, rather than a guarantee for every publication's reference style.
 
-Rendering has two workers, a shared 256 MiB raster cache, and a shared 64 MiB text/geometry cache. PDFKit's internal allocations and the visible layer contents contribute additional process memory. A complex page can take time to rasterize, while the main interface remains available. See `VALIDATION.md` for measured results and remaining manual checks.
+Rendering has two workers, a shared 256 MiB raster cache, and a shared 64 MiB text/geometry cache. PDFKit's internal allocations and the visible layer contents contribute additional process memory. A complex page can take time to rasterize, while the main interface remains available. See [VALIDATION.md](VALIDATION.md) for measured results and remaining manual checks, and [ARCHITECTURE.md](ARCHITECTURE.md) for the implementation structure.
+
+## Contributing
+
+Issues and pull requests are welcome. For bug reports, include your macOS and Xcode versions, the steps to reproduce, and whether the problem occurs with multiple PDFs. Share a small reproducible fixture when possible, without including private documents or library data.
+
+For code changes, run the relevant checks from [Validation and profiling](#validation-and-profiling). Run `./scripts/validate.sh` for changes spanning the core, rendering, and interface. Regenerate the Xcode project with `python3 scripts/generate-project.py` when adding app or test source files.
+
+## Acknowledgments
+
+[Sioyek](https://github.com/ahrm/sioyek) by [ahrm](https://github.com/ahrm) and its contributors inspired this project's research workflows, keyboard conventions, reference navigation, portals, and external search behavior. Its [documentation](https://sioyek-documentation.readthedocs.io/en/latest/) describes the original reader, and its source is available under [GNU GPL v3](https://github.com/ahrm/sioyek/blob/main/LICENSE).
+
+Swift Sioyek implements these workflows in Swift using AppKit, PDFKit, Quartz, Core Animation, and the system SQLite library. The app icon was generated separately for this project; its provenance and generation prompt are recorded in [Resources/Icon](Resources/Icon/README.md).
+
+Project names identify their respective projects and do not imply affiliation or endorsement. Additional attribution is recorded in [NOTICE](NOTICE).
+
+## License
+
+SPDX-License-Identifier: GPL-3.0-or-later
+
+Copyright (C) 2026 Rohith Saradhy and contributors.
+
+Swift Sioyek's original source code, build scripts, tests, documentation, and project assets are provided under the **GNU General Public License, version 3 or (at your option) any later version**, except where a file states otherwise. See [LICENSE](LICENSE) for the complete license text and [NOTICE](NOTICE) for attribution. Apple frameworks and system libraries retain their respective terms.
+
+This program is free software: you can redistribute it and/or modify it under those terms. It is distributed in the hope that it will be useful, but **without any warranty**, including the implied warranties of merchantability or fitness for a particular purpose.
+
+When distributing this program or a modified version, comply with the GPL's notice, licensing, and corresponding-source requirements. Include the license and preserve applicable copyright notices.

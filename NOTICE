@@ -1,0 +1,32 @@
+Swift Sioyek
+Copyright (C) 2026 Rohith Saradhy and contributors.
+SPDX-License-Identifier: GPL-3.0-or-later
+
+Original project material is licensed under the GNU General Public License,
+version 3 or (at your option) any later version, except where a file states
+otherwise. The complete license is in LICENSE.
+
+Acknowledgment of Sioyek
+-----------------------
+This independent project is inspired by Sioyek, created by ahrm and
+contributors:
+  https://github.com/ahrm/sioyek
+  https://sioyek-documentation.readthedocs.io/en/latest/
+
+Sioyek's research workflows, keyboard conventions, reference navigation,
+portals, and external search behavior informed this implementation. Upstream
+Sioyek is distributed under GNU GPL v3; its license is available at:
+  https://github.com/ahrm/sioyek/blob/main/LICENSE
+
+Swift Sioyek is not affiliated with or endorsed by the upstream Sioyek
+project. Project names identify their respective projects; this notice
+does not grant trademark rights or imply endorsement.
+
+System components and assets
+----------------------------
+The app uses Apple's AppKit, PDFKit, Quartz, and Core Animation frameworks,
+and the system SQLite library. Those components retain their respective
+terms and are not relicensed by this project's license.
+
+The app icon was generated separately for Swift Sioyek. Its provenance and
+generation prompt are recorded in Resources/Icon/README.md and prompt.txt.

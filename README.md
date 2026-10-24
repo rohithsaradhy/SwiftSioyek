@@ -1,10 +1,10 @@
+> [!NOTE]
+> I just wanted a Sioyek-like PDF reader built in Swift for my personal use. I found it useful, so I am sharing it in this open repository.
+> This app was entirely written by AI.
+> -Rohith Saradhy
+
+
 # Swift Sioyek
-
-## Notes from Rohith Saradhy
-
-I just wanted a Sioyek-like PDF reader built in Swift for my personal use. I found it useful, so I am sharing it in this open repository.
-
-This app was entirely written by AI.
 
 ![Swift Sioyek app icon](Resources/Assets.xcassets/AppIcon.appiconset/icon_128x128.png)
 

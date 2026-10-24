@@ -8,6 +8,12 @@ Inspired by [Sioyek](https://github.com/ahrm/sioyek), created by [ahrm](https://
 
 **Status:** experimental source release. The current target is macOS 27 with Xcode 27 or newer; older macOS versions and Intel Macs are not supported by the current build configuration. Build locally using the instructions below.
 
+## Notes from Rohith Saradhy
+
+I just wanted a Sioyek-like PDF reader built in Swift for my personal use. I found it useful, so I am sharing it in this open repository.
+
+This app was entirely written by AI.
+
 ## Features
 
 - Configurable keyboard commands, counted motions, marks, and navigation history.

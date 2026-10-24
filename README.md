@@ -139,6 +139,12 @@ Copyright (C) 2026 Rohith Saradhy and contributors.
 
 Swift Sioyek's original source code, build scripts, tests, documentation, and project assets are provided under the **GNU General Public License, version 3 or (at your option) any later version**, except where a file states otherwise. See [LICENSE](LICENSE) for the complete license text and [NOTICE](NOTICE) for attribution. Apple frameworks and system libraries retain their respective terms.
 
-This program is free software: you can redistribute it and/or modify it under those terms. It is distributed in the hope that it will be useful, but **without any warranty**, including the implied warranties of merchantability or fitness for a particular purpose.
+This program is free software: you can redistribute it and/or modify it under those terms.
 
 When distributing this program or a modified version, comply with the GPL's notice, licensing, and corresponding-source requirements. Include the license and preserve applicable copyright notices.
+
+### No warranty
+
+**SWIFT SIOYEK IS PROVIDED "AS IS", WITHOUT ANY WARRANTY WHATSOEVER, EXPRESS OR IMPLIED, TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW.** This includes the implied warranties of merchantability and fitness for a particular purpose.
+
+You assume the entire risk as to the program's quality and performance, including the cost of any necessary servicing, repair, or correction. The warranty disclaimer and limitation of liability in sections 15–17 of [LICENSE](LICENSE) apply.

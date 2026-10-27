@@ -87,6 +87,15 @@ final class ReaderViewport: NSScrollView {
         if let location { navigate(to: location) } else { scrollToPage(selectedPage) }
         window?.makeFirstResponder(canvas)
     }
+    func showPreview(info: DocumentInfo, location: DocumentLocation, figureCaption: CGRect?) {
+        var target = location
+        if let caption = figureCaption, info.pages.indices.contains(target.pageIndex) {
+            let page = info.pages[target.pageIndex]
+            target.zoom = min(target.zoom, max(0.1, (contentSize.width - 32) / page.size(adding: target.rotation).width))
+            target.point = page.figurePreviewAnchor(caption: caption, viewport: contentSize, zoom: target.zoom, adding: target.rotation)
+        }
+        show(info: info, location: target)
+    }
     func replaceGeometry(_ new: [PageGeometry]) {
         let anchor = currentLocation
         var changed = false

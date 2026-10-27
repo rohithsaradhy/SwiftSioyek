@@ -1,5 +1,6 @@
 import XCTest
 import PDFServices
+import AppKit
 
 @MainActor
 final class ReaderUITests: XCTestCase {
@@ -17,6 +18,49 @@ final class ReaderUITests: XCTestCase {
         XCTAssertTrue(app.windows["UI Research Paper"].waitForExistence(timeout: 15))
     }
     private func closeReader() { app?.terminate(); try? FileManager.default.removeItem(at: directory) }
+    func testLongCaptionFigurePreviewFromLinkAndTextReference() async throws {
+        try startReader(); defer { closeReader() }
+        app.terminate()
+        let url = directory.appendingPathComponent("long-caption.pdf")
+        try FixtureFactory.makeFigurePreviewDocument(at: url)
+        app.launchArguments = [url.path]; app.launch()
+        XCTAssertTrue(app.windows["Long Caption Preview Fixture"].waitForExistence(timeout: 15))
+        let artifacts = FileManager.default.temporaryDirectory.appendingPathComponent("SwiftSioyek-validation")
+        try FileManager.default.createDirectory(at: artifacts, withIntermediateDirectories: true)
+        func expectArtwork(_ name: String) async throws {
+            let preview = app.scrollViews["reader.preview"]
+            XCTAssertTrue(preview.waitForExistence(timeout: 5))
+            var fraction = 0.0
+            for _ in 0..<40 {
+                let bitmap = try XCTUnwrap(NSBitmapImageRep(data: preview.screenshot().pngRepresentation))
+                var blue = 0, samples = 0
+                for y in stride(from: 0, to: bitmap.pixelsHigh, by: 4) {
+                    for x in stride(from: 0, to: bitmap.pixelsWide, by: 4) {
+                        if let color = bitmap.colorAt(x: x, y: y)?.usingColorSpace(.sRGB) {
+                            samples += 1
+                            if color.blueComponent > 0.65 && color.blueComponent > color.redComponent + 0.3 && color.blueComponent > color.greenComponent + 0.2 { blue += 1 }
+                        }
+                    }
+                }
+                fraction = Double(blue) / Double(max(1, samples))
+                if fraction > 0.2 { break }
+                try await Task.sleep(for: .milliseconds(100))
+            }
+            try preview.screenshot().pngRepresentation.write(to: artifacts.appendingPathComponent("long-caption-preview-\(name).png"))
+            XCTAssertGreaterThan(fraction, 0.2, "The blue diagram above the long caption must be visible")
+            app.typeKey(.escape, modifierFlags: [])
+            XCTAssertTrue(preview.waitForNonExistence(timeout: 5))
+            XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "value BEGINSWITH '1 / 2'")).firstMatch.exists)
+        }
+        let link = app.links["Go to page 2"].firstMatch
+        XCTAssertTrue(link.waitForExistence(timeout: 10)); link.rightClick()
+        try await expectArtwork("link")
+        let reference = app.staticTexts["See Figure 1 for details."].firstMatch
+        XCTAssertTrue(reference.waitForExistence(timeout: 10)); reference.rightClick()
+        try await expectArtwork("reference")
+        app.typeText("l")
+        try await expectArtwork("keyboard")
+    }
     func testLinkBackAndForwardWithToolbarAndKeyboard() throws {
         try startReader(); defer { closeReader() }
         func expectPage(_ page: Int) {

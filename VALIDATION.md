@@ -20,6 +20,10 @@ The link-navigation regression was reproduced before the fix: clicking an embedd
 
 On 27 October 2026, a native overlay regression reproduced the incorrect highlight colors (`hg` yellow and `hr` purple). Reader overlays and PDF export now share explicit color-letter mappings. All 21 core and 14 integration tests pass, including saved/reopened styles, exported RGB colors for all a–z types, uppercase normalization, and invalid-style fallback. The seven-color native overlay regression and the marks/highlights/bookmarks/portals UI workflow pass. The broader native run passes nine of ten tests; its existing scrolling test fails in the combined run and passes when run alone. The normal sandboxed Release app builds, passes strict signature verification, and is installed at `/Applications/SwiftSioyek.app` with an executable matching the verified build.
 
+The 27 October 2026 figure-preview correction was reproduced with a deterministic PDF containing a right-column diagram and a 17-line caption. Disabling the new placement fails the native visibility regression at source zooms of 75%, 170%, and 400%; enabling it reveals the entire diagram and the caption's first line. All 22 core and 15 integration tests pass, including crop/rotation transforms, destination-caption detection before background indexing, and unchanged table-preview handling. The new native and Release UI regressions pass for embedded links, resolved text references, keyboard previews, Escape dismissal, and preservation of the source page. Screenshots are saved as `build/validation/long-caption-preview-{link,reference,keyboard}.png`.
+
+The complete Release run passed 10 of 11 native input tests and 9 of 11 UI tests. Both palette-related UI failures passed on a separate run. The previously documented `testScrollingThroughPageAndCanvasPreservesZoom` failure persists in the separate Release run, so the aggregate validation command is not green. The normal sandboxed Release app builds and passes strict code-signature verification.
+
 ## PDF service benchmark
 
 Reproduce with `./scripts/benchmark.sh`. Data: `build/fixtures/benchmark.json`.

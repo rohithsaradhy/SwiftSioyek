@@ -76,6 +76,8 @@ Native menus expose all supported commands. Settings edits and validates the JSO
 
 Search accepts a one-based physical page range: `<20,30>Figure`. Smart jumps use embedded links first, then locally indexed English numbered figure/table captions, equation labels, and bibliography entries. Ambiguous matches present a destination list. Unresolved references fall back to text search. Reference indexing proceeds in the background.
 
+Figure previews place the caption's first line near the bottom of the popover, leaving most of the view for the graphic above it. Long captions can be read by scrolling down inside the preview. This applies to embedded links and resolved figure references; ordinary jumps still go to their original destinations.
+
 ## External search
 
 Select text, then press `s` followed by an engine letter to open a search in your default browser. The defaults follow [Sioyek's external search](https://sioyek-documentation.readthedocs.io/en/latest/usage.html#external-search): `ss` searches Google Scholar, `sl` Library Genesis, and `sg` Google. **Research → External Search** and the command palette also accept the engine letter. Escape cancels the pending command.

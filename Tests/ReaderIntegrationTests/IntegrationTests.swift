@@ -3,6 +3,7 @@ import ReaderCore
 import ReaderPersistence
 import PDFServices
 import CoreGraphics
+import AppKit
 @preconcurrency import PDFKit
 
 final class IntegrationTests: XCTestCase {
@@ -167,6 +168,44 @@ final class IntegrationTests: XCTestCase {
         try await PDFExporter().export(source: source, highlights: [record], to: destination)
         XCTAssertTrue(FileManager.default.fileExists(atPath: destination.path))
         do { try await PDFExporter().export(source: source, highlights: [record], to: source.url); XCTFail("Source overwrite was allowed") } catch PDFServiceError.forbidden {}
+    }
+    func testSavedHighlightColorsMatchExportedAnnotations() async throws {
+        let directory = try temporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let source = try source(in: directory)
+        let storeURL = directory.appendingPathComponent("Library.sqlite")
+        let store = try LibraryStore(url: storeURL)
+        let styles = Array("abcdefghijklmnopqrstuvwxyz").map(String.init) + ["G", "R", "", "?", "green", "é"]
+        for (index, style) in styles.enumerated() {
+            let part = SelectionPart(pageIndex: 0, range: TextRange(index, 1), rects: [CGRect(x: 40, y: 750 - index * 16, width: 100, height: 12)], text: "Color \(index)")
+            try await store.saveRecord(LibraryRecord(kind: .highlight, location: DocumentLocation(document: source.identity, pageIndex: 0), title: part.text, selection: [part], style: style))
+        }
+        let reopened = try LibraryStore(url: storeURL)
+        let records = try await reopened.records(document: source.identity.id)
+        XCTAssertEqual(Set(records.map(\.style)), Set(styles))
+        let destination = directory.appendingPathComponent("colors.pdf")
+        try await PDFExporter().export(source: source, highlights: records, to: destination)
+        let page = try XCTUnwrap(PDFDocument(url: destination)?.page(at: 0))
+        let annotations = page.annotations.filter { $0.userName == "Swift Sioyek" }
+        XCTAssertEqual(annotations.count, styles.count)
+        for record in records {
+            let annotation = try XCTUnwrap(annotations.first { $0.contents == record.title })
+            let actual = try XCTUnwrap(annotation.color.usingColorSpace(.sRGB))
+            let expected = try XCTUnwrap(HighlightPalette.color(for: record.style).usingColorSpace(.sRGB))
+            XCTAssertEqual(actual.redComponent, expected.redComponent, accuracy: 0.001, record.style)
+            XCTAssertEqual(actual.greenComponent, expected.greenComponent, accuracy: 0.001, record.style)
+            XCTAssertEqual(actual.blueComponent, expected.blueComponent, accuracy: 0.001, record.style)
+        }
+    }
+    func testHighlightPaletteNormalizesStylesAndPreservesOtherTypes() {
+        let expected: [(String, NSColor)] = [("a", .systemYellow), ("c", .systemBlue), ("g", .systemGreen), ("r", .systemRed), ("b", .systemBlue), ("y", .systemYellow), ("o", .systemOrange), ("p", .systemPurple), ("k", .systemPink)]
+        for (style, color) in expected {
+            for variant in [style, style.uppercased()] {
+                XCTAssertEqual(HighlightPalette.color(for: variant), color, variant)
+            }
+        }
+        for style in ["", "?", "green", "é", "🟢"] {
+            XCTAssertEqual(HighlightPalette.color(for: style), .systemYellow, style)
+        }
     }
     func testScansHaveNoTextAndMalformedDocumentsFail() async throws {
         let directory = try temporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }

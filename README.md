@@ -1,6 +1,7 @@
 > [!NOTE]
 > I just wanted a Sioyek-like PDF reader built in Swift for my personal use. I found it useful, so I am sharing it in this open repository.
 > This app was entirely written by AI.
+>
 > -Rohith Saradhy
 
 
@@ -68,6 +69,8 @@ Alternatively, open `SwiftSioyek.xcodeproj` and run the shared **SwiftSioyek** s
 | Cancel | Escape |
 
 Lowercase marks belong to their document; uppercase marks are global. `j` and `k` move the reading ruler, following Sioyek's semantics. Arrow keys and two-finger trackpad movement scroll. Pinch two fingers to zoom in or out around the pointer, including over page content and margins. Pinch zoom works in the main reader, reference previews, and portal windows.
+
+Highlight colors follow their letters: `hg` green, `hr` red, `hb` blue, `hy` yellow, `ho` orange, `hp` purple, and `hk` pink. `ha` remains the default yellow; other letters retain their existing colors. The reader, saved highlights, and annotated PDF exports use the same color mappings.
 
 Native menus expose all supported commands. Settings edits and validates the JSON key map and external search settings, applying changes to all reader windows. Older key maps gain the `s` command unless it conflicts with a custom binding.
 

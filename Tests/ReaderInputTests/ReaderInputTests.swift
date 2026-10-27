@@ -56,6 +56,30 @@ final class ReaderInputTests: XCTestCase {
         let cg = try XCTUnwrap(CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2, wheel1: dy, wheel2: dx, wheel3: 0))
         return try XCTUnwrap(NSEvent(cgEvent: cg))
     }
+    func testHighlightShortcutsRenderTheirNamedColors() throws {
+        _ = NSApplication.shared
+        let viewport = ReaderViewport(renderer: RenderCoordinator())
+        let page = PageCanvas(viewport: viewport, index: 0)
+        let expected: [(String, NSColor)] = [("g", .systemGreen), ("r", .systemRed), ("b", .systemBlue), ("y", .systemYellow), ("o", .systemOrange), ("p", .systemPurple), ("k", .systemPink)]
+        var keys = KeySequenceMachine()
+        page.highlightRects = try expected.enumerated().map { index, entry in
+            XCTAssertNil(keys.feed("h"))
+            let invocation = try XCTUnwrap(keys.feed(entry.0))
+            XCTAssertEqual(invocation.command, .addHighlight)
+            return (CGRect(x: 40, y: 700 - index * 20, width: 100, height: 12), try XCTUnwrap(invocation.argument))
+        }
+        page.drawOverlays()
+        let layers = (page.layer?.sublayers ?? []).flatMap { $0.sublayers ?? [] }.compactMap { $0 as? CAShapeLayer }.filter { $0.compositingFilter as? String == "multiplyBlendMode" }
+        XCTAssertEqual(layers.count, expected.count)
+        for (layer, entry) in zip(layers, expected) {
+            let actual = try XCTUnwrap(NSColor(cgColor: try XCTUnwrap(layer.fillColor))?.usingColorSpace(.sRGB))
+            let color = try XCTUnwrap(entry.1.usingColorSpace(.sRGB))
+            XCTAssertEqual(actual.redComponent, color.redComponent, accuracy: 0.001, "h\(entry.0)")
+            XCTAssertEqual(actual.greenComponent, color.greenComponent, accuracy: 0.001, "h\(entry.0)")
+            XCTAssertEqual(actual.blueComponent, color.blueComponent, accuracy: 0.001, "h\(entry.0)")
+            XCTAssertEqual(actual.alphaComponent, 0.3, accuracy: 0.001)
+        }
+    }
     func testPinchOverPDFKeepsPointUnderPointerAfterScrollingAndRotation() throws {
         let (window, viewport) = makeViewport(); defer { window.close() }
         for nativeRotation in [0, 90, 180, 270] {

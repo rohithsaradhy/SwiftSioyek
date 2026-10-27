@@ -337,7 +337,7 @@ final class ReaderWindowController: NSWindowController, NSWindowDelegate, NSTool
             case .deleteBookmark: deleteNearest(kind: .bookmark)
             case .addHighlight:
                 if let symbol = invocation.argument { addHighlight(style: symbol) }
-                else { status.stringValue = "Highlight type: press a–z"; keys.expectArgument(for: .addHighlight) }
+                else { status.stringValue = "Highlight: g green · r red · b blue · y yellow · o orange · p purple · k pink"; keys.expectArgument(for: .addHighlight) }
             case .deleteHighlight: if let id = selectedHighlight, let record = records.first(where: { $0.id == id }) { deleteRecord(record) } else { status.stringValue = "Click a highlight first" }
             case .setMark:
                 if let symbol = invocation.argument, let location = viewport.currentLocation { saveRecord(LibraryRecord(kind: .mark, location: location, title: symbol)) }

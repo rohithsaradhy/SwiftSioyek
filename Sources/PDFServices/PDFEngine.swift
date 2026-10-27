@@ -230,9 +230,7 @@ public actor PDFExporter {
                 guard let page = document.page(at: part.pageIndex) else { continue }
                 for rect in part.rects where !rect.isEmpty {
                     let annotation = PDFAnnotation(bounds: rect, forType: .highlight, withProperties: nil)
-                    let palette: [NSColor] = [.systemYellow, .systemGreen, .systemBlue, .systemPink, .systemOrange, .systemPurple]
-                    let letter = Int(highlight.style.utf8.first ?? 97) - 97
-                    annotation.color = palette[abs(letter) % palette.count].withAlphaComponent(0.38)
+                    annotation.color = HighlightPalette.color(for: highlight.style).withAlphaComponent(0.38)
                     annotation.contents = part.text; annotation.userName = "Swift Sioyek"
                     annotation.quadrilateralPoints = [NSValue(point: CGPoint(x: 0, y: rect.height)), NSValue(point: CGPoint(x: rect.width, y: rect.height)), NSValue(point: .zero), NSValue(point: CGPoint(x: rect.width, y: 0))]
                     page.addAnnotation(annotation)

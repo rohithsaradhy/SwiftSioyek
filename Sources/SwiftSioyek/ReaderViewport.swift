@@ -342,9 +342,8 @@ final class PageCanvas: NSView {
         func path(_ rects: [CGRect]) -> CGPath { let path = CGMutablePath(); for rect in rects where !rect.isNull { path.addRect(screenRect(for: rect)) }; return path }
         // Individual highlight layers preserve the user's a–z color types.
         overlay.sublayers?.forEach { $0.removeFromSuperlayer() }
-        let colors: [NSColor] = [.systemYellow, .systemGreen, .systemBlue, .systemPink, .systemOrange, .systemPurple]
         for (rect, style) in highlightRects {
-            let shape = CAShapeLayer(); shape.path = path([rect]); shape.fillColor = colors[abs(Int(style.utf8.first ?? 97) - 97) % colors.count].withAlphaComponent(0.3).cgColor; shape.compositingFilter = "multiplyBlendMode"; overlay.addSublayer(shape)
+            let shape = CAShapeLayer(); shape.path = path([rect]); shape.fillColor = HighlightPalette.color(for: style).withAlphaComponent(0.3).cgColor; shape.compositingFilter = "multiplyBlendMode"; overlay.addSublayer(shape)
         }
         selectionLayer.path = path(selectionRects); selectionLayer.fillColor = NSColor.selectedTextBackgroundColor.withAlphaComponent(0.35).cgColor
         searchLayer.path = path(searchRects); searchLayer.fillColor = NSColor.systemOrange.withAlphaComponent(0.35).cgColor

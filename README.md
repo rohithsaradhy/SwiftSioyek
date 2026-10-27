@@ -13,7 +13,7 @@ A research PDF reader for Apple Silicon Macs, written in Swift with AppKit and P
 
 Inspired by [Sioyek](https://github.com/ahrm/sioyek), created by [ahrm](https://github.com/ahrm) and contributors. **Swift Sioyek is an independent project and is not affiliated with or endorsed by the upstream Sioyek project.** It uses Apple's PDF rendering frameworks rather than Sioyek's rendering stack. See [Acknowledgments](#acknowledgments) and [License](#license).
 
-**Status:** experimental source release. The current target is macOS 27 with Xcode 27 or newer; older macOS versions and Intel Macs are not supported by the current build configuration. Build locally using the instructions below.
+**Version:** 0.1.1 (build 2). **Status:** experimental source release. The current target is macOS 27 with Xcode 27 or newer; older macOS versions and Intel Macs are not supported by the current build configuration. Build locally using the instructions below.
 
 ## Features
 

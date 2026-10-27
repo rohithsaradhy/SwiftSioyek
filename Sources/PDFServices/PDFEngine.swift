@@ -212,6 +212,18 @@ public actor PDFTextService {
     }
     public func matches(query: SearchQuery, page: Int) throws -> [SearchHit] { query.matches(in: try text(page: page, detailed: false).text, page: page) }
     public func resolve(_ text: String) -> [ReferenceTarget] { guard let key = ReferenceResolver.key(in: text) else { return [] }; return referenceIndex[key] ?? [] }
+    /// Hyperref destinations commonly sit at the start of a caption. Inspect
+    /// only that destination page, independently of background reference indexing.
+    public func figureCaption(page index: Int, near point: CGPoint) throws -> CGRect? {
+        try Task.checkCancellation()
+        let snapshot = try text(page: index, detailed: false)
+        return snapshot.lines.filter { line in
+            line.text.range(of: #"(?i)^\s*fig(?:ure)?\.?\s*[A-Z]?\d"#, options: .regularExpression) != nil &&
+                line.bounds.insetBy(dx: -48, dy: -36).contains(point)
+        }.min {
+            hypot($0.bounds.minX - point.x, $0.bounds.maxY - point.y) < hypot($1.bounds.minX - point.x, $1.bounds.maxY - point.y)
+        }?.bounds
+    }
     public func indexedPageCount() -> Int { indexedPages.count }
     public func trim() { SharedTextCache.shared.trim() }
     public nonisolated static func trimSharedCache() { SharedTextCache.shared.trim() }

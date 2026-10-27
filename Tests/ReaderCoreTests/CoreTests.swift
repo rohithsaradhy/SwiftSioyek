@@ -35,6 +35,24 @@ final class CoreTests: XCTestCase {
             }
         }
     }
+    func testFigurePreviewAnchorHandlesRotationCropAndPageTop() {
+        let viewport = CGSize(width: 620, height: 380)
+        for nativeRotation in [0, 90, 180, 270] {
+            let geometry = PageGeometry(index: 0, cropBox: CGRect(x: 25, y: 21, width: 558, height: 740), rotation: nativeRotation)
+            for rotation in [0, 90, 180, 270] {
+                for zoom in [0.75, 1.0, 2.0] {
+                    let caption = CGRect(x: 300, y: 220, width: 200, height: 12)
+                    let anchor = geometry.figurePreviewAnchor(caption: caption, viewport: viewport, zoom: zoom, adding: rotation)
+                    let origin = geometry.displayPoint(anchor, adding: rotation)
+                    let target = geometry.displayRect(caption, adding: rotation)
+                    let visible = CGRect(origin: origin, size: CGSize(width: viewport.width / zoom, height: viewport.height / zoom))
+                    XCTAssertGreaterThanOrEqual(origin.y, 0, "Do not scroll into the preceding page")
+                    XCTAssertTrue(visible.contains(CGPoint(x: target.midX, y: target.minY)))
+                    XCTAssertTrue(visible.contains(CGPoint(x: target.midX, y: max(0, target.minY - 200 / zoom))), "Reveal artwork above the caption after rotation")
+                }
+            }
+        }
+    }
     func testPageLayoutVirtualization() {
         let pages = (0..<1_000).map { PageGeometry(index: $0, cropBox: CGRect(x: 0, y: 0, width: 612, height: 792)) }
         let layout = PageLayout(pages: pages, zoom: 1, rotation: 0, viewportWidth: 900)

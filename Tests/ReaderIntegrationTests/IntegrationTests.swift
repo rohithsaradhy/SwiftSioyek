@@ -109,6 +109,27 @@ final class IntegrationTests: XCTestCase {
             }
         }
     }
+    func testFigurePreviewRecognizesCaptionStartWithoutWaitingForIndexing() async throws {
+        let directory = try temporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("long-caption.pdf")
+        try FixtureFactory.makeFigurePreviewDocument(at: url)
+        let identity = DocumentIdentity(id: UUID(), revision: try FileIdentity.revision(of: url))
+        let service = PDFTextService(); _ = try await service.open(DocumentSource(identity: identity, url: url))
+        let source = try await service.text(page: 0, detailed: false)
+        let figureLink = try XCTUnwrap(source.links.first { $0.destinationPoint?.x == 310 })
+        let caption = try await service.figureCaption(page: try XCTUnwrap(figureLink.destinationPage), near: try XCTUnwrap(figureLink.destinationPoint))
+        let firstLine = try XCTUnwrap(caption)
+        XCTAssertLessThan(firstLine.height, 20, "Frame the start of a long caption, not all its continuation lines")
+        let targets = await service.resolve("Figure 1")
+        let target = try XCTUnwrap(targets.first)
+        let resolvedCaption = try await service.figureCaption(page: target.pageIndex, near: target.point)
+        XCTAssertEqual(resolvedCaption, caption)
+        let tableLink = try XCTUnwrap(source.links.first { $0.destinationPoint?.x == 42 })
+        let tableCaption = try await service.figureCaption(page: 1, near: try XCTUnwrap(tableLink.destinationPoint))
+        XCTAssertNil(tableCaption)
+        let continuation = try await service.figureCaption(page: 1, near: CGPoint(x: 310, y: 120))
+        XCTAssertNil(continuation, "Caption continuation text must not be mistaken for a figure's start")
+    }
     func testSmartJumpsOnlyIndexDefinitionsAndKeepAmbiguity() async throws {
         let directory = try temporaryDirectory(); defer { try? FileManager.default.removeItem(at: directory) }
         let source = try source(in: directory, pages: 30), service = PDFTextService(); _ = try await service.open(source)

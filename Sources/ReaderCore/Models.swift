@@ -64,6 +64,14 @@ public struct PageGeometry: Codable, Equatable, Sendable {
         let x = pageWidth <= visibleWidth ? (pageWidth - visibleWidth) / 2 : max(0, min(target.midX - visibleWidth / 2, pageWidth - visibleWidth))
         return pdfPoint(CGPoint(x: x, y: target.minY - min(50, viewport.height * 0.15) / scale), adding: extra)
     }
+    /// Leave most of a figure preview above the caption's first line. Including
+    /// the entire caption here would push a long caption's artwork out of view.
+    public func figurePreviewAnchor(caption: CGRect, viewport: CGSize, zoom: Double, adding extra: Int = 0) -> CGPoint {
+        let scale = max(0.1, zoom), visibleWidth = viewport.width / scale
+        let target = displayRect(caption, adding: extra), pageWidth = size(adding: extra).width
+        let x = pageWidth <= visibleWidth ? (pageWidth - visibleWidth) / 2 : max(0, min(target.midX - visibleWidth / 2, pageWidth - visibleWidth))
+        return pdfPoint(CGPoint(x: x, y: max(0, target.minY - viewport.height * 0.8 / scale)), adding: extra)
+    }
 }
 
 public struct DocumentInfo: Sendable {

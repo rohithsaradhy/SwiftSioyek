@@ -81,6 +81,7 @@ final class ReaderWindowController: NSWindowController, NSWindowDelegate, NSTool
     private var panel: ChoicePanel?
     private var previewPopover: NSPopover?
     private var previewViewport: ReaderViewport?
+    private var previewTask: Task<Void, Never>?
     private var portalWindow: NSWindow?
     private var portalViewport: ReaderViewport?
     private var lastPortalID: UUID?
@@ -277,6 +278,7 @@ final class ReaderWindowController: NSWindowController, NSWindowDelegate, NSTool
         fileObserver?.cancel(); fileObserver = nil
         for page in viewport.pageViews.values { page.cancel() }
         environment.renderer.cancel(owner: thumbnailsOwner)
+        closePreview()
     }
     func windowWillClose(_ notification: Notification) {
         let lastRecent = recent, location = viewport.currentLocation
@@ -371,7 +373,7 @@ final class ReaderWindowController: NSWindowController, NSWindowDelegate, NSTool
     }
     private func handleKey(_ event: NSEvent) {
         guard !event.modifierFlags.contains(.command) else { return }
-        if event.keyCode == 53 { keys.reset(); hintInput = ""; viewport.hintMode = false; keyboardSelecting = false; scroller.stop(); previewPopover?.close(); viewport.selection = nil; status.stringValue = "Ready"; return }
+        if event.keyCode == 53 { keys.reset(); hintInput = ""; viewport.hintMode = false; keyboardSelecting = false; scroller.stop(); closePreview(); viewport.selection = nil; status.stringValue = "Ready"; return }
         if viewport.hintMode {
             guard let chars = event.charactersIgnoringModifiers, chars.count == 1 else { return }; hintInput += chars.lowercased()
             if let hint = viewport.hintLinks.first(where: { $0.0 == hintInput }) { viewport.hintMode = false; follow(hint.2, page: hint.1, preview: false); hintInput = "" }
@@ -689,13 +691,30 @@ final class ReaderWindowController: NSWindowController, NSWindowDelegate, NSTool
         Task { do { let snapshot = try await service.text(page: page); guard generation == token else { return }; let bounds = snapshot.lines.map(\.bounds).reduce(CGRect.null) { $0.union($1) }; if !bounds.isNull { viewport.fit(widthOnly: true, contentBounds: bounds.insetBy(dx: -12, dy: -12)) } else { viewport.fit(widthOnly: true) } } catch { status.stringValue = error.localizedDescription } }
     }
     private func showPreview(_ location: DocumentLocation, sourcePage: Int, point: CGPoint) {
-        guard let info, let page = viewport.pageViews[sourcePage] else { return }
-        previewPopover?.close()
-        let popover = NSPopover(); popover.behavior = .semitransient; popover.contentSize = CGSize(width: 620, height: 380)
-        let controller = NSViewController(); let reader = ReaderViewport(renderer: environment.renderer); reader.pagePriority = 1; controller.view = reader
-        reader.show(info: info, location: location); reader.onKey = { [weak self] event in if event.keyCode == 53 { self?.previewPopover?.close() } }
-        popover.contentViewController = controller; previewViewport = reader; previewPopover = popover
-        popover.show(relativeTo: page.screenRect(for: CGRect(x: point.x, y: point.y, width: 1, height: 1)), of: page, preferredEdge: .maxX)
+        guard let info, info.pages.indices.contains(location.pageIndex) else { return }
+        closePreview()
+        let service = service, token = generation
+        previewTask = Task { [weak self] in
+            let geometry = try? await service.geometry(pages: location.pageIndex..<(location.pageIndex + 1))
+            let caption = try? await service.figureCaption(page: location.pageIndex, near: location.point)
+            guard let self, !Task.isCancelled, generation == token, let page = viewport.pageViews[sourcePage] else { return }
+            var previewInfo = info
+            for geometry in geometry ?? [] { previewInfo.pages[geometry.index] = geometry }
+            let size = CGSize(width: 620, height: 380)
+            let popover = NSPopover(); popover.behavior = .semitransient; popover.contentSize = size
+            let controller = NSViewController(); let reader = ReaderViewport(renderer: environment.renderer)
+            reader.pagePriority = 1; reader.frame = CGRect(origin: .zero, size: size); controller.view = reader
+            reader.setAccessibilityIdentifier("reader.preview")
+            reader.onKey = { [weak self] event in if event.keyCode == 53 { self?.closePreview() } }
+            popover.contentViewController = controller; previewViewport = reader; previewPopover = popover
+            popover.show(relativeTo: page.screenRect(for: CGRect(x: point.x, y: point.y, width: 1, height: 1)), of: page, preferredEdge: .maxX)
+            reader.layoutSubtreeIfNeeded()
+            reader.showPreview(info: previewInfo, location: location, figureCaption: caption)
+        }
+    }
+    private func closePreview() {
+        previewTask?.cancel(); previewTask = nil
+        previewPopover?.close(); previewPopover = nil; previewViewport = nil
     }
     private func createPortal() {
         guard let current = viewport.currentLocation else { return }

@@ -47,6 +47,30 @@ public enum FixtureFactory {
         guard document.write(to: temporary) else { throw PDFServiceError.unreadable }
         _ = try FileManager.default.replaceItemAt(url, withItemAt: temporary)
     }
+    public static func makeFigurePreviewDocument(at url: URL) throws {
+        var box = CGRect(x: 0, y: 0, width: 612, height: 792)
+        guard let consumer = CGDataConsumer(url: url as CFURL), let context = CGContext(consumer: consumer, mediaBox: &box, [kCGPDFContextTitle: "Long Caption Preview Fixture"] as CFDictionary) else { throw PDFServiceError.unreadable }
+        context.beginPDFPage(nil)
+        draw("Open linked diagram", at: CGPoint(x: 42, y: 690), size: 12, in: context)
+        context.setDestination("figure-caption" as CFString, for: CGRect(x: 42, y: 687, width: 180, height: 16))
+        draw("Open linked table", at: CGPoint(x: 42, y: 660), size: 12, in: context)
+        context.setDestination("table-caption" as CFString, for: CGRect(x: 42, y: 657, width: 180, height: 16))
+        draw("See Figure 1 for details.", at: CGPoint(x: 42, y: 630), size: 12, in: context)
+        context.endPDFPage()
+        context.beginPDFPage(nil)
+        context.addDestination("figure-caption" as CFString, at: CGPoint(x: 310, y: 264))
+        context.addDestination("table-caption" as CFString, at: CGPoint(x: 42, y: 694))
+        draw("Table 1. An ordinary preview destination.", at: CGPoint(x: 42, y: 680), size: 11, in: context)
+        context.setFillColor(CGColor(red: 0.1, green: 0.3, blue: 0.85, alpha: 1))
+        context.fill(CGRect(x: 310, y: 280, width: 250, height: 280))
+        draw("Artwork top", at: CGPoint(x: 325, y: 540), size: 14, in: context)
+        draw("Artwork bottom", at: CGPoint(x: 325, y: 295), size: 14, in: context)
+        draw("Figure 1. A diagram with a long caption.", at: CGPoint(x: 310, y: 250), size: 11, in: context)
+        for line in 1...16 {
+            draw("Caption continuation \(line): detailed explanation.", at: CGPoint(x: 310, y: 250 - Double(line) * 12), size: 10, in: context)
+        }
+        context.endPDFPage(); context.closePDF()
+    }
     private static func drawPage(_ context: CGContext, index: Int, box: CGRect, columns: Bool) {
         context.setFillColor(CGColor(gray: 1, alpha: 1)); context.fill(box)
         // Orientation fiducials survive PDF rotations and crop offsets.

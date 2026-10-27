@@ -1,6 +1,7 @@
 import XCTest
 import AppKit
 import ReaderCore
+import PDFServices
 
 // NSEvent has no public factory for magnification events. Override only the
 // documented fields consumed by the reader; no system input is posted.
@@ -55,6 +56,39 @@ final class ReaderInputTests: XCTestCase {
     private func wheel(dy: Int32, dx: Int32 = 0) throws -> NSEvent {
         let cg = try XCTUnwrap(CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 2, wheel1: dy, wheel2: dx, wheel3: 0))
         return try XCTUnwrap(NSEvent(cgEvent: cg))
+    }
+    func testFigurePreviewShowsArtworkAboveLongCaption() async throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("FigurePreview-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("long-caption.pdf")
+        try FixtureFactory.makeFigurePreviewDocument(at: url)
+        let identity = DocumentIdentity(id: UUID(), revision: try FileIdentity.revision(of: url))
+        let service = PDFTextService()
+        var info = try await service.open(DocumentSource(identity: identity, url: url))
+        info.pages = try await service.geometry(pages: 0..<2)
+        let source = try await service.text(page: 0, detailed: false)
+        let link = try XCTUnwrap(source.links.first { $0.destinationPoint?.x == 310 })
+        let destination = try XCTUnwrap(link.destinationPoint)
+        let detectedCaption = try await service.figureCaption(page: 1, near: destination)
+        let caption = try XCTUnwrap(detectedCaption)
+        let (window, viewport) = makeViewport(); defer { window.close() }
+        viewport.frame.size = CGSize(width: 620, height: 380); viewport.layoutSubtreeIfNeeded()
+        for zoom in [0.75, 1.7, 4.0] {
+            let location = DocumentLocation(document: identity, pageIndex: 1, point: destination, zoom: zoom)
+            viewport.showPreview(info: info, location: location, figureCaption: caption)
+            let page = try XCTUnwrap(viewport.pageViews[1])
+            let artwork = page.convert(page.screenRect(for: CGRect(x: 310, y: 280, width: 250, height: 280)), to: viewport.canvas)
+            let start = page.convert(page.screenRect(for: caption), to: viewport.canvas)
+            XCTAssertTrue(viewport.contentView.bounds.contains(artwork), "The whole figure must be visible at source zoom \(zoom)")
+            XCTAssertTrue(viewport.contentView.bounds.contains(start))
+            XCTAssertEqual((start.minY - viewport.contentView.bounds.minY) / viewport.contentSize.height, 0.8, accuracy: 0.02)
+            XCTAssertEqual(viewport.currentLocation?.pageIndex, 1)
+        }
+        let ordinary = DocumentLocation(document: identity, pageIndex: 1, point: CGPoint(x: 42, y: 694), zoom: 1.7)
+        viewport.showPreview(info: info, location: ordinary, figureCaption: nil)
+        XCTAssertEqual(viewport.zoom, ordinary.zoom)
+        XCTAssertEqual(viewport.currentLocation?.point.y ?? 0, ordinary.point.y, accuracy: 0.01)
     }
     func testHighlightShortcutsRenderTheirNamedColors() throws {
         _ = NSApplication.shared
